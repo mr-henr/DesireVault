@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Desire Vault
+GenericName=Biblioteca de jogos
+Comment=Organize sua biblioteca pessoal de jogos
+Exec=desire-vault
+TryExec=desire-vault
+Icon=desire-vault
+Terminal=false
+StartupNotify=true
+DBusActivatable=false
+Categories=Game;
+Keywords=jogos;biblioteca;game;library;

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="220" viewBox="0 0 720 220"><defs>
+<linearGradient id="violet" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#D8C7FF"/><stop offset=".48" stop-color="#A77BFF"/><stop offset="1" stop-color="#6828D9"/></linearGradient>
+<linearGradient id="back" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8D55F0"/><stop offset="1" stop-color="#4A1CA8"/></linearGradient>
+<linearGradient id="mid" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E0D4FF"/><stop offset=".55" stop-color="#A77BFF"/><stop offset="1" stop-color="#7740DF"/></linearGradient>
+</defs>
+<g transform="translate(8 12) scale(.76)"><path d="M34 52 Q34 44 41 40 L75 20 Q83 16 83 26 L83 153 Q83 161 76 165 L42 185 Q34 190 34 180 Z" fill="url(#back)"/>
+<path d="M76 31 Q76 20 85 15 L119 0 Q128 -4 128 7 L128 174 Q128 183 119 188 L85 205 Q76 210 76 199 Z" fill="url(#mid)"/>
+<path fill="url(#violet)" fill-rule="evenodd" d="M130 14 Q130 1 141 8 L211 49 Q224 57 224 72 L224 136 Q224 151 211 159 L141 200 Q130 207 130 194 Z M164 78 Q160 76 160 82 L160 128 Q160 134 165 131 L201 110 Q207 106 201 102 Z"/></g>
+<text x="205" y="104" fill="#F1EDF8" font-family="Inter,Manrope,Arial,sans-serif" font-size="57" font-weight="650" letter-spacing="8">DESIRE</text>
+<text x="205" y="166" fill="#A77BFF" font-family="Inter,Manrope,Arial,sans-serif" font-size="57" font-weight="750" letter-spacing="8">VAULT</text></svg>

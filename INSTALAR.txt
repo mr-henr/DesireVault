@@ -1,0 +1,17 @@
+DESIRE VAULT — CACHYOS / ARCH LINUX
+
+INSTALAR
+1. Abra DesireVault-Installer.run com a opção Executar no KDE.
+2. Avance da tela de boas-vindas para Opções.
+3. Opcionalmente escolha Criar atalho na área de trabalho.
+4. Opcionalmente use Procurar backup… para selecionar um backup JSON.
+5. Clique em Instalar e acompanhe o progresso.
+6. Abra Desire Vault pelo menu de aplicativos.
+
+O instalador é um único arquivo, instala apenas para seu usuário e não solicita senha de administrador. Não é necessário extrair o projeto. Requisitos de execução: CachyOS/Arch Linux x86_64 com GTK 3, WebKitGTK 4.1 e curl.
+
+DESINSTALAR
+Execute novamente DesireVault-Installer.run e clique em Desinstalar Desire Vault… na tela inicial. O app, ícone, lançador e atalhos são removidos. A biblioteca é preservada por padrão; para apagar também o banco local, capas, cache e preferências, marque essa opção na confirmação.
+
+BACKUP E RESTAURAÇÃO
+A documentação detalhada está em Docs/README.md. O app permite exportar e restaurar JSON; antes de substituir a biblioteca, cria uma cópia local. O backup direto ao Google Drive não está disponível nesta versão.

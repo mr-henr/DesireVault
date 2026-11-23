@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Desire Vault</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="resize-hitbox resize-n" data-resize-direction="North" aria-hidden="true"></div>
+  <div class="resize-hitbox resize-s" data-resize-direction="South" aria-hidden="true"></div>
+  <div class="resize-hitbox resize-e" data-resize-direction="East" aria-hidden="true"></div>
+  <div class="resize-hitbox resize-w" data-resize-direction="West" aria-hidden="true"></div>
+  <div class="resize-hitbox resize-ne" data-resize-direction="NorthEast" aria-hidden="true"></div>
+  <div class="resize-hitbox resize-nw" data-resize-direction="NorthWest" aria-hidden="true"></div>
+  <div class="resize-hitbox resize-se" data-resize-direction="SouthEast" aria-hidden="true"></div>
+  <div class="resize-hitbox resize-sw" data-resize-direction="SouthWest" aria-hidden="true"></div>
+  <div class="app-loading" id="appLoading" role="status" aria-live="polite" aria-busy="true">
+    <img src="./assets/desire-vault-logo-horizontal.svg" alt="Desire Vault" />
+    <span class="loading-spinner" aria-hidden="true"></span>
+    <strong>Abrindo sua biblioteca</strong>
+    <small>Carregando seus jogos e preparando o Desire Vault…</small>
+    <span class="loading-track" aria-hidden="true"><i></i></span>
+  </div>
+  <aside class="sidebar">
+    <div class="brandbar" data-tauri-drag-region="deep">
+      <img class="brand-logo" src="./assets/desire-vault-logo-horizontal.svg" alt="Desire Vault" draggable="false" />
+      <button class="icon-button" id="focusSearch" title="Pesquisar" aria-label="Pesquisar">⌕</button>
+    </div>
+    <div class="nav-section-label">GAMES</div>
+    <nav class="nav-list" id="mainNav">
+      <button data-section="Recentes" data-kind="recent">◷ <span>Recentes</span></button>
+      <button class="active" data-section="Todos os jogos" data-kind="all">▣ <span>Todos os jogos</span><b id="allCount">0</b></button>
+      <button data-section="Na lista" data-kind="status">□ <span>Lista de desejos</span><b id="wishCount">0</b></button>
+      <button data-section="Baixando" data-kind="status">↓ <span>Baixando</span><b id="downloadingCount">0</b></button>
+      <button data-section="Baixado" data-kind="status">▣ <span>Baixados</span><b id="downloadedCount">0</b></button>
+      <button data-section="Jogando" data-kind="status">▷ <span>Jogando</span></button>
+      <button data-section="Concluído" data-kind="status">✓ <span>Concluídos</span></button>
+      <button data-section="Abandonado" data-kind="status">⌁ <span>Abandonados</span></button>
+    </nav>
+    <div class="nav-section-label friends-label">BIBLIOTECA</div>
+    <nav class="nav-list">
+      <button id="favoriteNav">☆ <span>Favoritos</span><b id="favoriteCount">0</b></button>
+      <button data-section="Não funciona no Linux" data-kind="status">⊘ <span>Linux</span></button>
+      <button id="qbitNav">↓ <span>Downloads</span><i id="qbitNavSpinner" class="loading-spinner nav-loading hidden" aria-hidden="true"></i><b id="qbitActivityBadge" class="qbit-activity-badge hidden" aria-label=""></b></button>
+      <button id="backupNav">↻ <span>Backup e restauração</span></button>
+      <button id="settingsNav">⚙ <span>Configurações</span></button>
+    </nav>
+    <div class="sidebar-bottom">
+      <div id="backgroundStatus" class="background-status is-loading"><span class="loading-spinner" aria-hidden="true"></span><span>Preparando downloads…</span></div>
+      <div class="source-label">ARMAZENAMENTO LOCAL</div>
+      <div class="local-source"><i></i> SQLite · neste dispositivo</div>
+      <div class="sidebar-foot"><span class="status-dot"></span> Offline e privado</div>
+    </div>
+  </aside>
+
+  <main class="main-panel">
+    <header class="toolbar" data-tauri-drag-region="deep">
+      <div class="history-actions"><button class="icon-button" id="backBtn" title="Voltar">‹</button><button class="icon-button" id="forwardBtn" title="Avançar">›</button><button class="icon-button" id="bookmarkBtn" title="Favoritos">♧</button></div>
+      <div class="drag-space" data-tauri-drag-region></div>
+      <div class="toolbar-actions">
+        <button class="toolbar-button" id="filterBtn"><span class="filter-icon">▽</span> Filtrar <span class="tiny-chevron">⌄</span></button>
+        <button class="toolbar-button add-button" id="addBtn"><span>＋</span> Adicionar</button>
+        <label class="searchbox"><span>⌕</span><input id="searchInput" type="search" placeholder="Buscar jogos" autocomplete="off" /></label>
+        <button class="toolbar-button" id="customizeBtn"><span>☷</span> Personalizar</button>
+      </div>
+      <div class="drag-space" data-tauri-drag-region></div>
+      <div class="window-actions"><button class="icon-button" title="Minimizar">—</button><button class="icon-button" title="Maximizar">□</button><button class="icon-button" title="Fechar">×</button></div>
+    </header>
+
+    <section class="filter-popover hidden" id="filterPanel">
+      <label>Status<select id="statusFilter"><option value="Todos">Todos</option><option>Na lista</option><option>Baixando</option><option>Baixado</option><option>Jogando</option><option>Concluído</option><option>Abandonado</option><option>Não funciona no Linux</option></select></label>
+      <label>Compatibilidade<select id="protonFilter"><option value="Todos">Todas</option><option>Platinum</option><option>Gold</option><option>Silver</option><option>Bronze</option><option>Borked</option><option>Pending</option><option>Sem dados</option></select></label>
+      <label>Ordenar por<select id="sortFilter"><option value="title">Nome</option><option value="recent">Adicionados recentemente</option><option value="year">Ano de lançamento</option><option value="priority">Prioridade</option></select></label>
+      <button class="text-button" id="clearFilters">Limpar filtros</button>
+    </section>
+
+    <div class="content-scroll">
+      <div class="section-header">
+        <div class="section-kicker"><span class="section-chevron">⌄</span><span id="sectionTitle">TODOS OS JOGOS</span></div>
+        <div class="section-meta"><span id="shownCount">0 jogos</span><span class="view-toggle"><button class="active" id="gridViewBtn" title="Grade">▦</button><button id="listViewBtn" title="Lista">☰</button></span></div>
+      </div>
+      <div class="game-grid" id="gameGrid"></div>
+      <div class="empty-state hidden" id="emptyState"><div class="empty-icon">▣</div><strong>Nenhum jogo por aqui</strong><p>Adicione seu primeiro jogo para começar a organizar a biblioteca.</p><button class="toolbar-button add-button" id="emptyAdd">＋ Adicionar jogo</button></div>
+      <footer class="content-footer"><span id="footerCount">0 jogos na biblioteca</span><span>Salvo localmente neste dispositivo</span></footer>
+    </div>
+  </main>
+
+  <dialog class="game-dialog" id="gameDialog">
+    <section class="steam-search-panel" id="steamSearchPanel">
+      <div class="dialog-head"><div><div class="dialog-eyebrow">IMPORTAÇÃO PÚBLICA</div><h2>Buscar na Steam</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar">×</button></div>
+      <div class="steam-search-row"><input id="steamQuery" placeholder="Nome, AppID ou link da loja Steam" autocomplete="off" /><button type="button" class="toolbar-button save-button" id="steamSearchBtn">Buscar</button></div>
+      <div class="steam-hint" id="steamHint">Os dados públicos e a capa serão salvos na sua biblioteca local.</div>
+      <div class="steam-results" id="steamResults"></div>
+      <div class="manual-link-row"><span>Não encontrou o jogo?</span><button type="button" class="text-button" id="manualFormBtn">Cadastrar manualmente</button></div>
+    </section>
+    <form id="gameForm">
+      <div class="dialog-head"><div><div class="dialog-eyebrow">SUA BIBLIOTECA</div><h2 id="formTitle">Adicionar jogo</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar">×</button></div>
+      <input type="hidden" id="gameId" value="0" />
+      <div class="form-grid">
+        <label class="wide">Nome do jogo<input id="titleInput" required maxlength="120" placeholder="Ex.: The Witcher 3: Wild Hunt" /></label>
+        <label>Status<select id="gameStatus"><option>Na lista</option><option value="Baixando" disabled>Baixando (automático)</option><option>Baixado</option><option>Jogando</option><option>Concluído</option><option>Abandonado</option><option>Não funciona no Linux</option></select></label>
+        <label class="priority-field" id="priorityField">Prioridade<select id="gamePriority"><option>Quero muito jogar</option><option selected>Tenho interesse</option><option>Talvez futuramente</option></select></label>
+        <label>Gênero<input id="genreInput" placeholder="RPG, aventura…" /></label>
+        <label>Ano<input id="yearInput" inputmode="numeric" maxlength="4" placeholder="2024" /></label>
+        <div class="proton-field wide"><label for="protonInput">Compatibilidade Proton<select id="protonInput"><option>Sem dados</option><option>Platinum</option><option>Gold</option><option>Silver</option><option>Bronze</option><option>Borked</option><option>Pending</option></select></label><button type="button" class="toolbar-button proton-check-button" id="protonDbBtn">Consultar ProtonDB</button><small id="protonDbHint">Sem dados consultados.</small></div>
+        <label>AppID Steam<input id="appIdInput" inputmode="numeric" placeholder="Opcional" /></label>
+        <label>Desenvolvedora<input id="developerInput" placeholder="Opcional" /></label>
+        <label>Distribuidora<input id="publisherInput" placeholder="Opcional" /></label>
+        <label class="wide">Descrição<textarea id="descriptionInput" rows="3" placeholder="Uma nota rápida sobre o jogo…"></textarea></label>
+        <label class="cover-picker wide"><span>Capa do jogo</span><input type="file" id="coverInput" accept="image/png,image/jpeg,image/webp,image/gif" /><small>Na importação Steam, a capa é buscada e salva automaticamente.</small></label>
+        <label class="wide">Link Magnet ou .torrent<input id="torrentInput" type="url" placeholder="magnet:?xt=urn:btih:… ou https://…/jogo.torrent" /></label>
+        <div class="cover-preview-row wide hidden" id="coverPreviewRow"><div class="cover-preview" id="coverPreview"></div><div><b id="coverPreviewTitle">Capa pronta</b><small id="coverPreviewStatus"></small></div></div>
+        <label class="favorite-check wide"><input type="checkbox" id="favoriteInput" /> Marcar como favorito</label>
+      </div>
+      <div class="dialog-actions"><button type="button" class="text-button delete-button hidden" id="deleteBtn">Excluir jogo</button><span class="form-error" id="formError"></span><button type="button" class="toolbar-button" id="cancelBtn">Cancelar</button><button class="toolbar-button save-button" type="submit">Salvar jogo</button></div>
+    </form>
+  </dialog>
+
+<dialog class="detail-dialog" id="detailDialog">
+    <div class="detail-cover" id="detailCover"></div>
+    <div class="detail-content"><div class="dialog-head"><div class="dialog-eyebrow">DETALHES DO JOGO</div><button type="button" class="icon-button close-dialog" aria-label="Fechar detalhes">×</button></div><h2 id="detailTitle"></h2><div class="detail-tags" id="detailTags"></div><p id="detailDescription"></p><div class="detail-meta" id="detailMeta"></div><div class="detail-actions"><button class="toolbar-button hidden" id="openSteamBtn">Ver na Steam</button><button class="toolbar-button hidden" id="openProtonBtn">Ver no ProtonDB</button><button class="toolbar-button hidden" id="sendTorrentBtn">Adicionar ao qBittorrent</button><button class="toolbar-button" id="detailFavorite">☆ Favoritar</button><button class="toolbar-button save-button" id="detailEdit">Editar jogo</button></div></div>
+  </dialog>
+  <dialog class="qbit-dialog" id="qbitDialog">
+    <div class="dialog-head"><div><div class="dialog-eyebrow">INTEGRAÇÃO DE DOWNLOADS</div><h2>qBittorrent</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar">×</button></div>
+    <div class="qbit-settings">
+      <div class="qbit-actions"><button type="button" class="toolbar-button save-button" id="qbitConnectBtn">Preparar e iniciar automaticamente</button><button type="button" class="toolbar-button" id="qbitRefreshBtn">Atualizar downloads</button><button type="button" class="text-button" id="qbitOpenClientBtn">Mostrar qBittorrent</button></div>
+      <div id="qbitStatus" class="qbit-status" role="status" aria-live="polite">O Desire Vault configura e inicia o serviço local de downloads. Você não precisa criar usuário, senha ou ativar a interface web.</div>
+    </div>
+    <div class="qbit-downloads" id="qbitDownloads"><div class="qbit-empty">Os downloads aparecerão aqui quando o qBittorrent estiver pronto.</div></div>
+  </dialog>
+  <dialog class="confirm-dialog" id="torrentConfirmDialog">
+    <div class="dialog-head"><div><div class="dialog-eyebrow">QBITTORRENT</div><h2>Iniciar este download?</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar confirmação">×</button></div>
+    <p id="torrentConfirmText"></p>
+    <div class="dialog-actions"><button type="button" class="toolbar-button" id="cancelTorrentBtn">Cancelar</button><button type="button" class="toolbar-button save-button" id="confirmTorrentBtn">Adicionar ao qBittorrent</button></div>
+  </dialog>
+  <dialog class="confirm-dialog" id="removeConfirmDialog">
+    <div class="dialog-head"><div><div class="dialog-eyebrow">SUA BIBLIOTECA</div><h2 id="removeTitle">Remover jogo?</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar confirmação">×</button></div>
+    <p id="removeMessage"></p>
+    <div class="dialog-actions"><button type="button" class="toolbar-button" id="cancelRemoveBtn">Cancelar</button><button type="button" class="toolbar-button danger-button" id="confirmRemoveBtn">Remover</button></div>
+  </dialog>
+  <dialog class="confirm-dialog qbit-remove-dialog" id="qbitRemoveDialog">
+    <div class="dialog-head"><div><div class="dialog-eyebrow">INTEGRAÇÃO DE DOWNLOADS</div><h2>Remover torrent?</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar confirmação">×</button></div>
+    <p id="qbitRemoveMessage"></p>
+    <div class="dialog-actions">
+      <button type="button" class="toolbar-button" id="cancelQbitRemove">Cancelar</button>
+      <button type="button" class="toolbar-button" id="removeQbitKeepFiles">Remover, manter arquivos</button>
+      <button type="button" class="toolbar-button danger-button" id="removeQbitDeleteFiles">Remover e excluir arquivos</button>
+    </div>
+  </dialog>
+  <dialog class="confirm-dialog backup-dialog" id="backupDialog">
+    <div class="dialog-head"><div><div class="dialog-eyebrow">PROTEÇÃO DA BIBLIOTECA</div><h2>Backup e restauração</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar">×</button></div>
+    <p>Exporte jogos, metadados e capas em um arquivo JSON. Ao clicar em exportar, escolha onde salvar; o app mostrará o caminho completo do arquivo. Ao restaurar, sua biblioteca atual será substituída e uma cópia de segurança local será criada automaticamente.</p>
+    <div class="backup-actions"><button class="toolbar-button save-button" type="button" id="exportBackupBtn">Exportar backup</button><button class="toolbar-button" type="button" id="chooseBackupBtn">Restaurar de arquivo…</button><input type="file" id="backupFileInput" accept="application/json,.json" hidden /></div>
+    <div class="qbit-status" id="backupStatus" role="status" aria-live="polite"></div>
+  </dialog>
+  <dialog class="confirm-dialog" id="restoreConfirmDialog">
+    <div class="dialog-head"><div><div class="dialog-eyebrow">CONFIRMAR RESTAURAÇÃO</div><h2>Substituir a biblioteca?</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar">×</button></div>
+    <p id="restoreConfirmMessage"></p>
+    <div class="dialog-actions"><button class="toolbar-button" type="button" id="cancelRestoreBtn">Cancelar</button><button class="toolbar-button danger-button" type="button" id="confirmRestoreBtn">Substituir biblioteca</button></div>
+  </dialog>
+  <dialog class="confirm-dialog settings-dialog" id="settingsDialog">
+    <div class="dialog-head"><div><div class="dialog-eyebrow">PREFERÊNCIAS DO APLICATIVO</div><h2>Configurações</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar">×</button></div>
+    <section class="settings-section">
+      <div class="dialog-eyebrow">GERENCIAMENTO DO APLICATIVO</div>
+      <h3>Desinstalar Desire Vault</h3>
+      <p>Remove o aplicativo, o lançador, o ícone e o atalho opcional da área de trabalho deste usuário. O qBittorrent não será removido.</p>
+      <label class="settings-delete-data"><input type="checkbox" id="removeUserDataCheck" /> Apagar também minha biblioteca, capas e dados locais</label>
+      <small>Desmarcado: sua biblioteca é preservada e poderá ser recuperada se instalar o app novamente.</small>
+    </section>
+    <div class="dialog-actions"><button class="toolbar-button" type="button" id="closeSettingsBtn">Fechar</button><button class="toolbar-button danger-button" type="button" id="openUninstallConfirmBtn">Desinstalar aplicativo…</button></div>
+  </dialog>
+  <dialog class="confirm-dialog" id="uninstallConfirmDialog">
+    <div class="dialog-head"><div><div class="dialog-eyebrow">CONFIRMAR REMOÇÃO</div><h2>Desinstalar Desire Vault?</h2></div><button type="button" class="icon-button close-dialog" aria-label="Fechar">×</button></div>
+    <p id="uninstallConfirmText">O aplicativo e seus atalhos serão removidos. Sua biblioteca será preservada.</p>
+    <div class="dialog-actions"><button class="toolbar-button" type="button" id="cancelUninstallBtn">Cancelar</button><button class="toolbar-button danger-button" type="button" id="confirmUninstallBtn">Desinstalar</button></div>
+  </dialog>
+  <dialog class="confirm-dialog" id="uninstallCompleteDialog">
+    <div class="dialog-head"><div><div class="dialog-eyebrow">REMOÇÃO CONCLUÍDA</div><h2>Desire Vault foi desinstalado</h2></div></div>
+    <p id="uninstallCompleteText">O app e os atalhos foram removidos deste usuário. Esta janela fechará ao concluir.</p>
+    <div class="dialog-actions"><button class="toolbar-button danger-button" type="button" id="finishUninstallBtn">Concluir</button></div>
+  </dialog>
+  <div class="toast hidden" id="toast"></div>
+  <script src="./app.js"></script>
+</body>
+</html>

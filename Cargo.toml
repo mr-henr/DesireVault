@@ -1,0 +1,27 @@
+[package]
+name = "game-library-manager"
+version = "0.1.0"
+description = "Biblioteca local de jogos para Linux"
+authors = ["Flavio Henrique"]
+edition = "2021"
+
+[[bin]]
+name = "game-library-manager"
+path = "src-tauri/src/main.rs"
+
+[[bin]]
+name = "desire-vault-installer"
+path = "src-tauri/src/installer.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+base64 = "0.22"
+sha2 = "0.10"
+gtk = "0.18"
+rfd = "0.17"
+

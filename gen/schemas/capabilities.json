@@ -1,0 +1,1 @@
+{"main-capability":{"identifier":"main-capability","description":"Permissões da janela principal do Desire Vault.","local":true,"windows":["main"],"permissions":["core:window:default","core:window:allow-start-dragging","core:window:allow-start-resize-dragging"]}}
