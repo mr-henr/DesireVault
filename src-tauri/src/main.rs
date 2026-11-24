@@ -1774,7 +1774,14 @@ fn enable_qbittorrent_webui(store: State<'_, Store>) -> Result<String, String> {
     start_qbittorrent(&path)?;
     let connection = QbitConnection {
         host,
-        auth: QbitAuth::Bearer(key),
+        // Probe with the same credentials that qbit_connection() will use
+        // after setup. Testing the API key here but preferring the saved
+        // password later can make setup succeed while every refresh fails
+        // (or reject a valid password because an old API key was retained).
+        auth: QbitAuth::Basic {
+            username: "admin".into(),
+            password: webui_password,
+        },
     };
     let mut last_error = String::new();
     for _ in 0..12 {
