@@ -1010,7 +1010,24 @@ fn update_qbit_ini(text: &str, key: &str, port: u16, password_hash: &str) -> Str
     }
     let mut out = lines.join("\n");
     out.push('\n');
-    out
+    // qBittorrent 5.3 can also keep Web UI credentials in a top-level [WebUI]
+    // section, which wins over [Preferences]. Mirror the values there so a
+    // stale password in that section cannot reject the freshly generated one.
+    let password = format!("\"{password_hash}\"");
+    let port = port.to_string();
+    set_qbit_ini_section_values(
+        &out,
+        "WebUI",
+        &[
+            ("Enabled", "true"),
+            ("Address", "127.0.0.1"),
+            ("Port", &port),
+            ("APIKey", key),
+            ("Username", "admin"),
+            ("Password_PBKDF2", &password),
+            ("LocalHostAuth", "true"),
+        ],
+    )
 }
 fn write_qbit_config(path: &std::path::Path, contents: &str) -> Result<(), String> {
     let parent = path.parent().ok_or("Pasta de configuração inválida.")?;
@@ -1148,6 +1165,12 @@ fn qbit_request(
         .rsplit_once('\n')
         .ok_or("O qBittorrent retornou uma resposta incompleta.")?;
     let code = status.trim();
+    if code == "403" && body.to_lowercase().contains("ban") {
+        return Err(
+            "O qBittorrent bloqueou temporariamente o acesso após várias tentativas de login com senha errada. Feche o qBittorrent e tente novamente."
+                .into(),
+        );
+    }
     if code == "401" || code == "403" {
         return Err(
             "O qBittorrent recusou a autenticação. Confira o usuário e a senha da Interface Web."
@@ -1793,7 +1816,16 @@ fn enable_qbittorrent_webui(store: State<'_, Store>) -> Result<String, String> {
                     return Ok(version);
                 }
             }
-            Err(error) => last_error = error,
+            Err(error) => {
+                // Retrying a rejected login only feeds qBittorrent's ban counter
+                // (5 failures locks 127.0.0.1 out until it restarts).
+                let rejected = error.contains("recusou a autenticação")
+                    || error.contains("bloqueou temporariamente");
+                last_error = error;
+                if rejected {
+                    break;
+                }
+            }
         }
     }
     Err(format!("O qBittorrent abriu, mas a Web API não respondeu em {}. {last_error} Confira o registro de execução do qBittorrent para mensagens de inicialização da Web UI.", connection.host))
@@ -2307,6 +2339,14 @@ mod tests {
         assert!(
             updated.find("WebUI\\Enabled=true").unwrap() < updated.find("[BitTorrent]").unwrap()
         );
+        let stale = "[Preferences]\nWebUI\\Port=8080\n\n[WebUI]\nEnabled=true\nPassword_PBKDF2=\"@ByteArray(old:old)\"\n";
+        let updated = update_qbit_ini(stale, key, 8181, "@ByteArray(salt:hash)");
+        assert!(!updated.contains("@ByteArray(old:old)"));
+        let webui = &updated[updated.find("[WebUI]").unwrap()..];
+        assert!(webui.contains("Password_PBKDF2=\"@ByteArray(salt:hash)\""));
+        assert!(webui.contains("Port=8181"));
+        assert!(webui.contains("Username=admin"));
+        assert_eq!(updated.matches("[WebUI]").count(), 1);
     }
     #[test]
     fn qbittorrent_download_rows_parse_progress_and_rates() {
